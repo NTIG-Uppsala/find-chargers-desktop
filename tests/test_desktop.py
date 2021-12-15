@@ -7,7 +7,7 @@ import platform
 #Check for output
 def test_desktop_end_to_end():
     ret = os.popen('dotnet run --project="../desktop-app/find-chargers-desktop.csproj"')
-    assert (ret.read() != "")
+    assert (ret.read().find("id"))
 
 #Check for right version
 def test_desktop_check_platorm():

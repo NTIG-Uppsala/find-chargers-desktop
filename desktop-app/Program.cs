@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 class mainClass
 {
-const string version = "0.001.a";
+const string version = "0.200.a";
     static async Task Main(string[] args)
     {
         // Display the number of command line arguments.
@@ -77,7 +77,11 @@ class httpHandler {
             var objs = JArray.Parse(responseBody).ToObject<List<JObject>>();
 
             foreach(var obj in objs){
-                Console.WriteLine("-|- ID: {0} | ADRESS: {1} | IS_VISIBLE: {2} | ", obj["id"].ToString().PadRight(10), obj["address"].ToString().PadRight(40), obj["is_visible"]);
+
+                string chargerType = string.Format(" AC_1: {0}, AC_2: {1}, Chademo: {2}, CCS: {3} ", obj["ac_1"], obj["ac_2"], obj["chademo"], obj["ccs"]);
+
+                Console.WriteLine("-|||- ID: {0} ||| ADRESS: {1} ||| {2} |||  IS_VISIBLE: {3}  ||| EMAIL: {4} |||", obj["id"].ToString().PadRight(5), obj["address"].ToString().PadRight(20), chargerType.PadRight(20), obj["is_visible"], obj["email_address"].ToString().PadRight(40));
+                Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------");
             }
 
         }

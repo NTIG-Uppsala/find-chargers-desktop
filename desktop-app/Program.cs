@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System;
+using Newtonsoft.Json.Linq;
 
 
 class mainClass
@@ -73,9 +74,12 @@ class httpHandler {
             string responseBody = await response.Content.ReadAsStringAsync();
             // Above three lines can be replaced with new helper method below
             // string responseBody = await client.GetStringAsync(uri);
+            var objs = JArray.Parse(responseBody).ToObject<List<JObject>>();
 
+            foreach(var obj in objs){
+                Console.WriteLine("-|- ID: {0} | ADRESS: {1} | IS_VISIBLE: {2} | ", obj["id"].ToString().PadRight(10), obj["address"].ToString().PadRight(40), obj["is_visible"]);
+            }
 
-            Console.WriteLine(responseBody);
         }
         catch(HttpRequestException e)
         {

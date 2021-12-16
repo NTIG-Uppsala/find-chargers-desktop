@@ -12,6 +12,15 @@ class MainClass
     {
         [Option('e', "email", Required = false, HelpText = "Email to send to api")]
         public string? email { get; set; }
+
+        [Option("lat", Required = false, HelpText = "latitude to send to api")]
+        public float? latitude { get; set; }
+
+        [Option("long", Required = false, HelpText = "longitude to send to api")]
+        public float? longitude { get; set; }
+
+        [Option('r', "range", Required = false, HelpText = "What range from cordinates to return charger (in meters)")]
+        public int? range { get; set; }
     }
     const string version = "0.300.a";
     static async Task Main(string[] args)
@@ -22,6 +31,7 @@ class MainClass
             await checkArgs(args);
         }
         else{
+            // Gets all chargers if nothing is specified
             await HttpHandler.MakeGetRequest("http://find-chargers.azurewebsites.net/get-charger");
         }
 
@@ -32,12 +42,26 @@ class MainClass
         Parser.Default.ParseArguments<Options>(args_in)
             .WithParsed<Options>(o =>
             {
-                if (o.email != "")
+
+                // Kan vara snyggt att göra detta till en switch case
+                if (o.email != null && o.latitude == null && o.longitude == null && o.range == null)
                 {
                     string urlFormatted = string.Format($"http://find-chargers.azurewebsites.net/get-charger-by-email/{o.email}");
                     var Task = HttpHandler.MakeGetRequest(urlFormatted);
                     Task.Wait(); // Wait for task to be done
                 }
+                else if(o.latitude != null && o.longitude != null && o.range != null && o.email == null) {
+                    string urlFormatted = string.Format($"http://find-chargers.azurewebsites.net/get-chargers-in-range/{o.latitude}/{o.longitude}/{o.range}");
+                    var Task = HttpHandler.MakeGetRequest(urlFormatted);
+                    Task.Wait();
+                }
+                else if((o.latitude == null || o.longitude == null || o.range == null) && o.email == null) {
+                    Console.WriteLine("To get a charger by cordinates and range you must include the following: --lat {number} --long {number} --range {number}");
+                }
+                else if((o.latitude != null || o.longitude != null || o.range != null) && o.email != null) {
+                    Console.WriteLine("When using --email you must only include --email in tne command.");
+                }
+
 
             });
     }

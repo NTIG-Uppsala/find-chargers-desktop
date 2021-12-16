@@ -25,7 +25,7 @@ class MainClass
         [Option('v', "version", Required = false, HelpText = "Gets current version")]
         public bool version { get; set; }
     }
-    const string programVer = "0.300.a";
+    const string programVer = "1.0.0";
     static async Task Main(string[] args)
     {
         // If args provided check args 
@@ -55,7 +55,7 @@ class MainClass
 
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
-                            Console.WriteLine("{0} running on Windows",  programVer);
+                            Console.WriteLine("{0} running on Windows!",  programVer);
                         }
 
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -81,7 +81,6 @@ class MainClass
                     }
                     else if(o.latitude != null && o.longitude != null && o.range != null && o.email == null) {
                         string urlFormatted = string.Format($"http://find-chargers.azurewebsites.net/get-chargers-in-range/{o.latitude}/{o.longitude}/{o.range}");
-                        Console.WriteLine(urlFormatted);
                         var Task = HttpHandler.MakeGetRequest(urlFormatted);
                         Task.Wait();
                     }
@@ -111,7 +110,6 @@ class HttpHandler {
             HttpResponseMessage response = await client.GetAsync(url);
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseBody);
             var dataResponse = JArray.Parse(responseBody).ToObject<List<JObject>>();
 
             // If objs is null dont continue

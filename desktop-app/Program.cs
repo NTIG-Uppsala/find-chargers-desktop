@@ -60,7 +60,7 @@ class MainClass
 
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                         {
-                            Console.WriteLine("{0} running on MacOS!",  programVer);
+                            Console.WriteLine("{0} running on Darwin!",  programVer);
                         }
 
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))

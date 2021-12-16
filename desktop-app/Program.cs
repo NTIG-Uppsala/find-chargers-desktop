@@ -1,72 +1,52 @@
 ﻿using System.Runtime.InteropServices;
 using System;
 using Newtonsoft.Json.Linq;
+using CommandLine;
 
 
-class mainClass
+
+class MainClass
 {
-const string version = "0.200.a";
+
+    public class Options
+    {
+        [Option('e', "email", Required = false, HelpText = "Email to send to api")]
+        public string? email { get; set; }
+    }
+    const string version = "0.300.a";
     static async Task Main(string[] args)
     {
+
         // If args provided check args 
         if(args.Length > 0){
-            checkArgs(args);
+            await checkArgs(args);
         }
-        await HttpHandler.MakeGetRequest("http://find-chargers.azurewebsites.net/get-charger");
+        else{
+            await HttpHandler.MakeGetRequest("http://find-chargers.azurewebsites.net/get-charger");
+        }
 
     }
     // Args handling logic
-    public static void checkArgs(string[] args_in){
-        string[] validArguments = {"--info","--version"};
+    public static async Task checkArgs(string[] args_in){
 
-        // More then one argument
-        if(args_in.Length > 1) {
-            Console.WriteLine("Only one argument is supported. Valid arduments are: {0}", string.Join(", ", validArguments));
-            return;
-        }
-
-        // Argument is --info
-        if(args_in[0] == "--info"){
-            Console.WriteLine("This desktop application is developed by NTI Uppsala. Its purpose is to det information from a api and display it for the user.");
-            return;
-        }
-        
-        // Argument is --version
-        if(args_in[0] == "--version"){
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        Parser.Default.ParseArguments<Options>(args_in)
+            .WithParsed<Options>(o =>
             {
-            Console.WriteLine("{0} running on Linux!",  version);
-            }
+                if (o.email != "")
+                {
+                    string urlFormatted = string.Format($"http://find-chargers.azurewebsites.net/get-charger-by-email/{o.email}");
+                    var Task = HttpHandler.MakeGetRequest(urlFormatted);
+                    Task.Wait(); // Wait for task to be done
+                }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Console.WriteLine("{0} running on Windows",  version);
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                Console.WriteLine("{0} running on MacOS!",  version);
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
-            {
-                Console.WriteLine("{0} running on freeBSD!",  version);
-            }
-            
-            Console.WriteLine("OS version {0}", Environment.OSVersion.Version);
-            return;
-        }
-
-        Console.WriteLine("{0} is not a valid argument. Valid arduments are: {1}", args_in[0] ,string.Join(", ", validArguments));
-
+            });
     }
 }
 
 class HttpHandler {
     static readonly HttpClient client = new HttpClient();
 
-    public static async Task MakeGetRequest(string url)
+    public static async Task<bool> MakeGetRequest(string url)
     {
         try	
         {
@@ -77,16 +57,15 @@ class HttpHandler {
 
             // If objs is null dont continue
             if(dataResponse == null) throw new HttpRequestException();
-
             foreach(var json in dataResponse){
 
                 string chargerType = string.Format(" AC_1: {0}, AC_2: {1}, Chademo: {2}, CCS: {3} ", json["ac_1"], json["ac_2"], json["chademo"], json["ccs"]);
-
                 try{
                     Console.WriteLine("-|||- ID: {0} ||| ADRESS: {1} ||| {2} |||  IS_VISIBLE: {3}  ||| EMAIL: {4} |||", json["id"].ToString().PadRight(5), json["address"].ToString().PadRight(20), chargerType.PadRight(20), json["is_visible"], json["email_address"].ToString().PadRight(40));
                     Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------");
                 } catch (Exception e) {
                     Console.WriteLine("Error formatting data: {0}", e.Message);
+                    return false;
                 }
                 
             }
@@ -96,7 +75,9 @@ class HttpHandler {
         {
             Console.WriteLine("\nException Caught!");	
             Console.WriteLine("Message :{0} ",e.Message);
+            return false;
         }
+        return true;
     }
 
 }

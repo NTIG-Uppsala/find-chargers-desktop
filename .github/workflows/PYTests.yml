@@ -41,6 +41,8 @@ jobs:
       - name: Pip install pytest
         run: pip install pytest
         
+      - name: Pip install requests
+        run: pip install requests
         
       - name: Run tests with pytest
         run: pytest tests/

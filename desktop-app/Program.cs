@@ -21,11 +21,13 @@ class MainClass
 
         [Option('r', "range", Required = false, HelpText = "What range from cordinates to return charger (in meters)")]
         public int? range { get; set; }
+
+        [Option('v', "version", Required = false, HelpText = "Gets current version")]
+        public bool version { get; set; }
     }
-    const string version = "0.300.a";
+    const string programVer = "0.300.a";
     static async Task Main(string[] args)
     {
-
         // If args provided check args 
         if(args.Length > 0){
             await checkArgs(args);
@@ -38,32 +40,64 @@ class MainClass
     }
     // Args handling logic
     public static async Task checkArgs(string[] args_in){
+        try{
+            var parser = new Parser((with) => {with.AutoVersion = false; with.HelpWriter = Console.Out; with.AutoHelp = true;});
+            var parserResult = parser.ParseArguments<Options>(args_in);
 
-        Parser.Default.ParseArguments<Options>(args_in)
-            .WithParsed<Options>(o =>
-            {
-
-                // Kan vara snyggt att göra detta till en switch case
-                if (o.email != null && o.latitude == null && o.longitude == null && o.range == null)
+            parserResult.WithParsed<Options>(o =>
                 {
-                    string urlFormatted = string.Format($"http://find-chargers.azurewebsites.net/get-charger-by-email/{o.email}");
-                    var Task = HttpHandler.MakeGetRequest(urlFormatted);
-                    Task.Wait(); // Wait for task to be done
-                }
-                else if(o.latitude != null && o.longitude != null && o.range != null && o.email == null) {
-                    string urlFormatted = string.Format($"http://find-chargers.azurewebsites.net/get-chargers-in-range/{o.latitude}/{o.longitude}/{o.range}");
-                    var Task = HttpHandler.MakeGetRequest(urlFormatted);
-                    Task.Wait();
-                }
-                else if((o.latitude == null || o.longitude == null || o.range == null) && o.email == null) {
-                    Console.WriteLine("To get a charger by cordinates and range you must include the following: --lat {number} --long {number} --range {number}");
-                }
-                else if((o.latitude != null || o.longitude != null || o.range != null) && o.email != null) {
-                    Console.WriteLine("When using --email you must only include --email in tne command.");
-                }
+                    if(o.version == true){
+
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                        {
+                        Console.WriteLine("{0} running on Linux!",  programVer);
+                        }
+
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        {
+                            Console.WriteLine("{0} running on Windows",  programVer);
+                        }
+
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                        {
+                            Console.WriteLine("{0} running on MacOS!",  programVer);
+                        }
+
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+                        {
+                            Console.WriteLine("{0} running on freeBSD!",  programVer);
+                        }
+
+                        Console.WriteLine("OS version {0}", Environment.OSVersion.Version);
+                        return; // Dont continue
+                    }
+
+                    // Kan vara snyggt att göra detta till en switch case
+                    if (o.email != null && o.latitude == null && o.longitude == null && o.range == null)
+                    {
+                        string urlFormatted = string.Format($"http://find-chargers.azurewebsites.net/get-charger-by-email/{o.email}");
+                        var Task = HttpHandler.MakeGetRequest(urlFormatted);
+                        Task.Wait(); // Wait for task to be done
+                    }
+                    else if(o.latitude != null && o.longitude != null && o.range != null && o.email == null) {
+                        string urlFormatted = string.Format($"http://find-chargers.azurewebsites.net/get-chargers-in-range/{o.latitude}/{o.longitude}/{o.range}");
+                        Console.WriteLine(urlFormatted);
+                        var Task = HttpHandler.MakeGetRequest(urlFormatted);
+                        Task.Wait();
+                    }
+                    else if((o.latitude == null || o.longitude == null || o.range == null) && o.email == null) {
+                        Console.WriteLine("To get a charger by cordinates and range you must include the following: --lat {number} --long {number} --range {number}");
+                    }
+                    else if((o.latitude != null || o.longitude != null || o.range != null) && o.email != null) {
+                        Console.WriteLine("When using --email you must only include --email in tne command.");
+                    }
 
 
-            });
+                });
+             } catch (Exception e){
+
+                Console.WriteLine(e.Message);
+        }   
     }
 }
 
@@ -77,6 +111,7 @@ class HttpHandler {
             HttpResponseMessage response = await client.GetAsync(url);
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(responseBody);
             var dataResponse = JArray.Parse(responseBody).ToObject<List<JObject>>();
 
             // If objs is null dont continue

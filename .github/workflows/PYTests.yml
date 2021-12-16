@@ -34,9 +34,11 @@ jobs:
       # Pytest builds app before running it so we need the sdk to build it
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.9.0
+        with:
+          dotnet-version: 6.x
       
       - name: Test Build
-        run: dotnet run --project="/home/runner/work/find-chargers-desktop/find-chargers-desktop/desktop-app/find-chargers-desktop.csproj" --version
+        run: dotnet run --project="desktop-app/find-chargers-desktop.csproj" --version
       
       - name: Install pip
         run: pip install --upgrade pip

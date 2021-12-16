@@ -35,22 +35,22 @@ def post_request():
 # Check charger by email
 def test_check_charger_by_email():
     charger_id = post_request()
-    ret = os.popen('dotnet run --project="../desktop-app/find-chargers-desktop.csproj" --email="test@test.com"')
+    ret = os.popen('dotnet run --project="../desktop-app/find-chargers-desktop.csproj" --email test@test.com')
     assert (ret.read().find(charger_id))
 
 # Check charger in range
 def test_check_charger_in_range():
     charger_id = post_request()
-    ret = os.popen('dotnet run --project="../desktop-app/find-chargers-desktop.csproj" --cords="31.5,21" --range="10000"')
+    ret = os.popen('dotnet run --project="../desktop-app/find-chargers-desktop.csproj" --lat 31.5 --long 21 --range 10000')
     assert (ret.read().find(charger_id))
 
 # Check charger not in range
 def test_check_charger_not_in_range():
     charger_id = post_request()
-    ret = os.popen('dotnet run --project="../desktop-app/find-chargers-desktop.csproj" --cords="31,21" --range="50"')
+    ret = os.popen('dotnet run --project="../desktop-app/find-chargers-desktop.csproj" --lat 31 --long 21 --range 50')
     assert not (ret.read().find(charger_id))
 
 def test_non_number_distance():
     expected_answer = {"errors": [{"value": "hej--","msg": "Must be a number!","param": "max_distance","location": "params"}]}
-    ret = os.popen('dotnet run --project="../desktop-app/find-chargers-desktop.csproj" --cords="31,21" --range="hej--"')
+    ret = os.popen('dotnet run --project="../desktop-app/find-chargers-desktop.csproj" --lat 31 --long 21 --range hej--')
     assert ret.read().find(expected_answer)

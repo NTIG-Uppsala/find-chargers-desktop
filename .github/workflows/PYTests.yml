@@ -36,7 +36,7 @@ jobs:
         uses: actions/setup-dotnet@v1.9.0
       
       - name: Test Build
-        run: dotnet restore && dotnet run --project="desktop-app/find-chargers-desktop.csproj" --version
+        run: dotnet run --project="/home/runner/work/find-chargers-desktop/find-chargers-desktop/desktop-app/find-chargers-desktop.csproj" --version
       
       - name: Install pip
         run: pip install --upgrade pip
